@@ -2,9 +2,6 @@ from PIL import Image
 import numpy as np
 import os
 
-from Class_vizinho import VizinhoMaisProximo
-from Class_bilinear import Bilinear
-
 def salvar(imagem_obj, nome_saida):
     """
     Salva a imagem na pasta 'output'
@@ -16,38 +13,92 @@ def salvar(imagem_obj, nome_saida):
     print(f"Imagem salva em: {caminho_saida}")
     print(f"Matriz resultante: {imagem_obj.size}")
 
+def reescalar_imagem_para_0_255(matriz):
+    
+    qtd_linhas, qtd_colunas = matriz.shape
+    valor_minimo = np.min(matriz)
+    valor_maximo = np.max(matriz)
+    matriz_escalonada = np.zeros(matriz.shape, dtype=np.uint8)
+    
+    for i in range(qtd_linhas):
+        for j in range(qtd_colunas):
+            matriz_escalonada[i, j] = int(255 * (matriz[i, j] - valor_minimo) / (valor_maximo - valor_minimo))
+        
+    return matriz_escalonada
+    
+def soma(imagem1, imagem2):
+    """
+    Realiza a soma entre duas imagens.
+    
+    """
+    if imagem1.size != imagem2.size:
+        raise ValueError("As imagens devem ter o mesmo tamanho para serem processadas.")
+    
+    qtd_linhas, qtd_colunas = imagem1.size
+    
+    matriz_soma = np.zeros((qtd_linhas, qtd_colunas), dtype=np.uint16)
+    for i in range(qtd_linhas):
+        for j in range(qtd_colunas):
+            matriz_soma[i, j] = imagem1.getpixel((i, j)) + imagem2.getpixel((i, j))
+    
+    matriz_soma = reescalar_imagem_para_0_255(matriz_soma)
+    return matriz_soma
+    
+    
+    
+def subtracao(imagem1, imagem2):
+    """Realiza a subtração de uma imagem por outra, retornando a matriz resultante escalada para 0-255.
+    
+    A função verifica se as imagens têm o mesmo tamanho e, em caso negativo, lança um ValueError.
+
+    Args:
+        imagem1 (_obj_): _a imagem a ser subtraida_
+        imagem2 (_obj_): _segunda imagem_
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+    if imagem1.size != imagem2.size:
+        raise ValueError("As imagens devem ter o mesmo tamanho para serem processadas.")
+    qtd_linhas, qtd_colunas = imagem1.size
+    matriz_subtracao = np.zeros((qtd_linhas, qtd_colunas), dtype=np.int16)
+    for i in range(qtd_linhas):
+        for j in range(qtd_colunas):
+            matriz_subtracao[i, j] = imagem1.getpixel((i, j)) - imagem2.getpixel((i, j)) 
+    
+    matriz_subtracao = reescalar_imagem_para_0_255(matriz_subtracao)
+    return matriz_subtracao
+
+    
+
 def main():
     caminho_imagem = "imagem.jpg"  # Imagem deve estar na pasta do projeto
     try:
-        imagem_orig = Image.open(caminho_imagem).convert("L") # Converte para escala de cinza
+        imagem1 = Image.open(caminho_imagem).convert("L") # Converte para escala de cinza
     except Exception as erro:
         print("Erro ao carregar a imagem:", erro)
         return
-
-    matriz_img = np.array(imagem_orig, dtype=np.uint8)
-    print(f"Matriz original: {imagem_orig.size}")
-
-    # Processamento com o método Vizinho Mais Próximo
-    interp_vizinho = VizinhoMaisProximo(matriz_img)
-
-    matriz_reduzida_vizinho = interp_vizinho.reduzir()
-    img_reduzida_vizinho = Image.fromarray(matriz_reduzida_vizinho)
-    salvar(img_reduzida_vizinho, "imagem_vizinho_reduzida.jpg")
+    caminho_imagem = "imagem2.png"  # Imagem deve estar na pasta do projeto
+    try:
+        imagem2 = Image.open(caminho_imagem).convert("L") # Converte para escala de cinza
+    except Exception as erro:
+        print("Erro ao carregar a imagem:", erro)
+        return
     
-    matriz_ampliada_vizinho = interp_vizinho.ampliar()
-    img_ampliada_vizinho = Image.fromarray(matriz_ampliada_vizinho)
-    salvar(img_ampliada_vizinho, "imagem_vizinho_ampliada.jpg")
+    # Realiza a soma das imagens
+    matriz_soma = soma(imagem1, imagem1)
+    img_soma = Image.fromarray(matriz_soma)
+    salvar(img_soma, "imagem_soma.jpg")
+    
+    # Realiza a subtração das imagens
+    matriz_subtracao = subtracao(imagem1, imagem2)
+    img_subtracao = Image.fromarray(matriz_subtracao)
+    salvar(img_subtracao, "imagem_subtracao.jpg")
 
-    # Processamento com o método Bilinear
-    interp_bilinear = Bilinear(matriz_img)
 
-    matriz_reduzida_bilinear = interp_bilinear.reduzir()
-    img_reduzida_bilinear = Image.fromarray(matriz_reduzida_bilinear)
-    salvar(img_reduzida_bilinear, "imagem_bilinear_reduzida.jpg")
-
-    matriz_ampliada_bilinear = interp_bilinear.ampliar()
-    img_ampliada_bilinear = Image.fromarray(matriz_ampliada_bilinear)
-    salvar(img_ampliada_bilinear, "imagem_bilinear_ampliada.jpg")
 
 if __name__ == "__main__":
     main()
