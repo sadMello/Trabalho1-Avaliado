@@ -1,3 +1,8 @@
+# 3ª Trabalho Prático - Processamento Digital de Imagens
+#Discentes: Helorrayne Cristine de Alcantara Rodrigues e Wanderson Almeida de Mello
+#implementação das funções de operações aritméticas e geométricas em imagens
+#Soma, Subtração e Escalonamento utilizando interpolação por vizinho mais próximo
+
 from PIL import Image
 import numpy as np
 import os
@@ -51,8 +56,15 @@ def reescalar_imagem_para_0_255(matriz):
     if valor_maximo == valor_minimo:
         return np.zeros(matriz.shape, dtype=np.uint8)
     
-    matriz_escalonada = 255 * (matriz - valor_minimo) / (valor_maximo - valor_minimo)
-    return matriz_escalonada.astype(np.uint8)
+    matriz_escalonada = np.zeros(matriz.shape, dtype=np.uint8)
+    for i in range(matriz.shape[0]):
+        for j in range(matriz.shape[1]):
+            pixel = matriz[i, j]
+            #formula: ((diferença entre o pixel e o valor min) / (valor max - valor min)) * 255
+            matriz_escalonada[i, j] = int((pixel - valor_minimo) * 255 / (valor_maximo - valor_minimo))
+    
+ 
+    return matriz_escalonada
 
 
 #funções de operações aritméticas em imagens
@@ -78,7 +90,7 @@ def soma(matriz1, matriz2):
         for j in range(qtd_colunas):
             pixel1 = int(matriz1[i, j])
             pixel2 = int(matriz2[i, j])
-            matriz_soma[i, j] = int((pixel1 + pixel2)/2)
+            matriz_soma[i, j] = int((pixel1 + pixel2)/2) # média dos pixels
             
     return matriz_soma
 
@@ -146,18 +158,43 @@ def escalar_vizinho_proximo(imagem, escala_x, escala_y):
 
 
 def main():
-    caminho_imagem = "imagem.jpg"
-    matriz_imagem1 = imagem_para_matriz(caminho_imagem)
-
-    matriz_soma = soma(matriz_imagem1, matriz_imagem1)
+    
+    img1 = [
+        [50, 50, 53, 53, 53],
+        [53, 53, 53, 53, 53],
+        [53, 53, 46, 46, 46],
+        [46, 46, 48, 48, 48],
+        [48, 48, 48, 70, 70]
+    ]
+    img2 = [
+        [120, 120, 113, 113, 114],
+        [113, 113, 113, 64, 64],
+        [64, 64, 64, 64, 64],
+        [64, 64, 41, 41, 41],
+        [41, 41, 41, 41, 41]
+    ]
+    
+    matriz_imagem1 = np.array(img1, dtype=np.uint8)
+    matriz_imagem2 = np.array(img2, dtype=np.uint8)
+    
+    matriz_soma = soma(matriz_imagem1, matriz_imagem2)
     imagem_soma = Image.fromarray(matriz_soma, mode="L")
     salvar(imagem_soma, "soma.jpg")
     
-    matriz_subtracao = subtracao(matriz_imagem1, matriz_imagem1)
+    matriz_subtracao = subtracao(matriz_imagem1, matriz_imagem2)
     imagem_subtracao = Image.fromarray(matriz_subtracao, mode="L")
     salvar(imagem_subtracao, "subtracao.jpg")
+    
+    print("Matriz da soma:")
+    print(matriz_soma)
+    print("Matriz da subtração:")
+    print(matriz_subtracao)
+    
+    
+    caminho_imagem = "imagem.jpg"
+    matriz_imagem = imagem_para_matriz(caminho_imagem)
 
-    matriz_escalada = escalar_vizinho_proximo(matriz_imagem1, 2.1, 0.52)
+    matriz_escalada = escalar_vizinho_proximo(matriz_imagem, 1.7, 0.75)
     imagem_escalada = Image.fromarray(matriz_escalada, mode="L")
     salvar(imagem_escalada, "escalada.jpg")
 
