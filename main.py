@@ -157,7 +157,7 @@ def main():
     imagem_subtracao = Image.fromarray(matriz_subtracao, mode="L")
     salvar(imagem_subtracao, "subtracao.jpg")
 
-    matriz_escalada = escalar_vizinho_proximo(matriz_imagem1, 0.3, 1.2)
+    matriz_escalada = escalar_vizinho_proximo(matriz_imagem1, 2.1, 0.52)
     imagem_escalada = Image.fromarray(matriz_escalada, mode="L")
     salvar(imagem_escalada, "escalada.jpg")
 
